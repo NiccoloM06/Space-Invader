@@ -17,11 +17,13 @@ class Player
 
 	 vector<Bullet> bullets;
 
-	sf::Sprite bullet_sprite;
-	sf::Sprite sprite;
+	//sf::Sprite bullet_sprite;
+	//sf::Sprite sprite;
 
 	sf::Texture bullet_texture;
 	sf::Texture texture;
+	std::optional<sf::Sprite> bullet_sprite;
+	std::optional<sf::Sprite> sprite;
 
 	Animation explosion;
 public:

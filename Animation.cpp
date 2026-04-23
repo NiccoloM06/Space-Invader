@@ -14,6 +14,7 @@ Animation::Animation(unsigned short i_animation_speed, unsigned short i_frame_wi
 	texture.loadFromFile(i_texture_location);
 
 	total_frames = texture.getSize().x / frame_width;
+	sprite.emplace(texture);
 }
 
 bool Animation::change_current_frame(){
@@ -37,7 +38,7 @@ bool Animation::update(){
 	while (animation_iterator >= animation_speed){
 		animation_iterator -= animation_speed;
 		current_frame++;
-         cout << total_frames;
+         //cout << total_frames;
 
 		if (current_frame == total_frames)
 		{
@@ -51,12 +52,12 @@ bool Animation::update(){
 }
 
 void Animation::draw(short i_x, short i_y, sf::RenderWindow& i_window, const sf::Color& i_color){
-	sprite.setColor(i_color);
-	sprite.setPosition(i_x, i_y);
-	sprite.setTexture(texture);
-	sprite.setTextureRect(sf::IntRect(current_frame * frame_width, 0, frame_width, texture.getSize().y));
+	sprite->setColor(i_color);
+	sprite->setPosition({static_cast<float>(i_x), static_cast<float>(i_y)});
+	sprite->setTexture(texture);
+	sprite->setTextureRect(sf::IntRect({current_frame * frame_width, 0}, {frame_width, static_cast<int>(texture.getSize().y)}));
 
-	i_window.draw(sprite);
+	i_window.draw(*sprite);
 }
 
 void Animation::reset()

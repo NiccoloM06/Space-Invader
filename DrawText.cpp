@@ -23,8 +23,8 @@ void draw_text(short i_x, short i_y, const  string& i_text, sf::RenderWindow& i_
 
 		}
 
-		character_sprite.setPosition(character_x, character_y);
-		character_sprite.setTextureRect(sf::IntRect(character_width * (*a - 32), 0, character_width, character_height));
+		character_sprite.setPosition({static_cast<float>(character_x), static_cast<float>(character_y)});
+		character_sprite.setTextureRect(sf::IntRect({character_width * (*a - 32), 0},{ character_width, character_height}));
 
 		character_x += character_width; //sposta il carattere a destra
 

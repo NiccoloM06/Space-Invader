@@ -5,6 +5,9 @@
 #include "Constants.h"
 #include "Enemy.h"
 
+#include <algorithm>
+#include <oneapi/tbb/detail/_utils.h>
+
 using namespace std;
 
 Enemy::Enemy(unsigned char i_type, unsigned short i_x, unsigned short i_y) :
@@ -42,6 +45,18 @@ unsigned short Enemy::get_y() const
 	return y;
 }
 
+void Enemy::set_y(unsigned short i_y) {
+	y += i_y;
+}
+
+char Enemy::get_direction() const {
+	return direction;
+}
+
+void Enemy::set_direction() {
+	direction = -direction;
+}
+
 
 void Enemy::hit()
 {
@@ -49,24 +64,21 @@ void Enemy::hit()
 }
 
 
-void Enemy::move( vector<Enemy>& all_enemies)
+void Enemy::move()
 {
-    bool changeDirection = false;
-
-        if ((1 == direction && x == SCREEN_WIDTH - 2 * BASE_SIZE) || (-1 == direction && x == BASE_SIZE)){
+        /*if ((1 == direction && x == SCREEN_WIDTH - 2 * BASE_SIZE) || (-1 == direction && x == BASE_SIZE) ){
             for (Enemy& enemy : all_enemies)
             {
-                enemy.y += ENEMY_MOVE_SPEED; 
-                enemy.direction = -enemy.direction; 
-                
+                enemy.y += ENEMY_MOVE_SPEED;
+            	enemy.direction = -enemy.direction;
 
+n ereeeewqw
             }
-        }
-        else
-        {
-            //x = clamp<short>(x + ENEMY_MOVE_SPEED * direction, BASE_SIZE, SCREEN_WIDTH - 2 * BASE_SIZE);
-        	x = x + ENEMY_MOVE_SPEED * direction;
-		}
+        }*/
+        //else
+        //{
+            x = std::clamp<short>(x + ENEMY_MOVE_SPEED * direction, BASE_SIZE, SCREEN_WIDTH - 2 * BASE_SIZE);
+		//}
 
 }
 
@@ -115,7 +127,7 @@ void Enemy::update()
 
 sf::IntRect Enemy::get_hitbox() const
 {
-	return sf::IntRect(x + 0.25f * BASE_SIZE, y + 0.25f * BASE_SIZE, 0.5f * BASE_SIZE, 0.5f * BASE_SIZE);
+	return sf::IntRect({static_cast<int>(x + 0.25f * BASE_SIZE), static_cast<int>( y + 0.25f * BASE_SIZE)},{ static_cast<int>(0.5f * BASE_SIZE),static_cast<int>( 0.5f * BASE_SIZE)});
 }
 
  vector<Enemy>& Enemy::get_enemies()

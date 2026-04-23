@@ -11,8 +11,8 @@ using namespace std;
 Ufo::Ufo( mt19937_64& i_random_engine) : 
 	y(BASE_SIZE),
 	timer_distribution(UFO_TIMER_MIN, UFO_TIMER_MAX),
-	animation(UFO_ANIMATION_SPEED, 2 * BASE_SIZE, "Ufo.png"),
-	explosion(EXPLOSION_ANIMATION_SPEED, 2 * BASE_SIZE, "ExplosionBig.png")
+	animation(UFO_ANIMATION_SPEED, 2 * BASE_SIZE, IMAGES_PATH+"Ufo.png"),
+	explosion(EXPLOSION_ANIMATION_SPEED, 2 * BASE_SIZE, IMAGES_PATH+"ExplosionBig.png")
 {
 	reset(1, i_random_engine);
 }
@@ -20,7 +20,7 @@ Ufo::Ufo( mt19937_64& i_random_engine) :
 bool Ufo::check_bullet_collision( mt19937_64& i_random_engine, const sf::IntRect& i_bullet_hitbox, unsigned short& i_score){
 	if (0 == dead)
 	{
-		if (1 == get_hitbox().intersects(i_bullet_hitbox))
+		if (get_hitbox().findIntersection(i_bullet_hitbox))
 		{
 			dead = 1;
 
@@ -92,5 +92,5 @@ void Ufo::update( mt19937_64& i_random_engine){
 
 sf::IntRect Ufo::get_hitbox() const
 {
-	return sf::IntRect(x, y, 2 * BASE_SIZE, BASE_SIZE);
+	return sf::IntRect({x, y}, {2 * BASE_SIZE, BASE_SIZE});
 }

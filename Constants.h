@@ -4,6 +4,12 @@ using namespace std;
 
 #include <cmath>
 
+// Paths
+inline const std::string ASSETS_PATH   = "assets/";
+inline const std::string IMAGES_PATH   = ASSETS_PATH + "images/";
+inline const std::string FONTS_PATH    = ASSETS_PATH + "fonts/";
+inline const std::string SOUNDS_PATH   = ASSETS_PATH + "sounds/";
+
 constexpr unsigned short BASE_SIZE = 16;
 constexpr unsigned short ENEMY_BULLET_SPEED = 2; //a 2 per far diventare il nemico bianco prima della morte
 constexpr unsigned short ENEMY_HIT_TIMER_DURATION = 2;
@@ -17,8 +23,8 @@ constexpr unsigned short EXPLOSION_ANIMATION_SPEED = 2;
 constexpr unsigned short FAST_RELOAD_DURATION = 7;
 constexpr unsigned short NEXT_LEVEL_TRANSITION = 64;
 constexpr unsigned short PLAYER_BULLET_SPEED = 4;
-constexpr unsigned short PLAYER_MOVE_SPEED = 2;
-constexpr unsigned short RELOAD_DURATION = 25;
+constexpr unsigned short PLAYER_MOVE_SPEED = 3;
+constexpr unsigned short RELOAD_DURATION = 23;
 constexpr unsigned short SCREEN_RESIZE = 4;
 constexpr unsigned short TOTAL_LEVELS = 8;
 constexpr unsigned short UFO_ANIMATION_SPEED = 8;
@@ -76,6 +82,6 @@ struct Bullet
 
     sf::IntRect get_hitbox() const
     {
-        return sf::IntRect(x + 0.25f * BASE_SIZE, y + 0.25f * BASE_SIZE, 0.5f * BASE_SIZE, 0.5f * BASE_SIZE);
+        return sf::IntRect({static_cast<int>(x + 0.25f * BASE_SIZE), static_cast<int>(y + 0.25f * BASE_SIZE)},{ static_cast<int>(0.5f * BASE_SIZE), static_cast<int>(0.5f * BASE_SIZE)});
     }
 };
