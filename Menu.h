@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 #include <vector>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>

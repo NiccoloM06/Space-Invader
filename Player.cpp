@@ -13,7 +13,8 @@
 
  using namespace std;
 
-Player::Player() :
+Player::Player(PlayerControls i_control) :
+	controls(i_control),
 	explosion(EXPLOSION_ANIMATION_SPEED, BASE_SIZE, IMAGES_PATH+"Explosion.png")
 {
 	reset();
@@ -45,12 +46,13 @@ void Player::die()
 	dead = 1;
 }
 
-void Player::draw(sf::RenderWindow& i_window)
+void Player::draw(sf::RenderWindow& i_window,unsigned short playerColor)
 {
 	if (0 == dead)
 	{
+		//sprite->setTexture(texture);
 		sprite->setPosition({static_cast<float>(x), static_cast<float>(y) });
-		sprite->setTextureRect(sf::IntRect({BASE_SIZE, 0}, {BASE_SIZE, BASE_SIZE}));
+		sprite->setTextureRect(sf::IntRect({playerColor, 0}, {BASE_SIZE, BASE_SIZE}));
 
 		for (const Bullet& bullet : bullets)
 		{
@@ -70,7 +72,7 @@ void Player::draw(sf::RenderWindow& i_window)
 
 void Player::reset()
 {
-	dead = 0;
+	dead = false;
 	dead_animation_over = 0;
 
 	current_power = 0;
@@ -86,24 +88,24 @@ void Player::reset()
 
 void Player::update( mt19937_64& i_random_engine,  vector<Bullet>& i_enemy_bullets,  vector<Enemy>& i_enemies, Ufo& i_ufo, unsigned short& i_score)
 {
-	if (0 == dead){
+	if (!dead){
 
-		if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+		if (sf::Keyboard::isKeyPressed(controls.left))
 		{
 
 			x =  max<int>(x - PLAYER_MOVE_SPEED, BASE_SIZE);
-			
+
 		}
 
-		if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+		if (sf::Keyboard::isKeyPressed(controls.right))
 		{
 			x =  min<int>(PLAYER_MOVE_SPEED + x, SCREEN_WIDTH - 2 * BASE_SIZE);
-			
+
 		}
 
 		if (0 == reload_timer)
 		{
-			if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Z)){
+			if (sf::Keyboard::isKeyPressed(controls.shoot)){
 			    reload_timer = RELOAD_DURATION;
 
 				bullets.push_back(Bullet(0, -PLAYER_BULLET_SPEED, x, y));

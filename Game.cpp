@@ -19,25 +19,54 @@ Game::Game() : state(GameState::Menu),
                       "Space Invaders"),
                ufo(random_engine),
                main_menu(60, 80, 20) {
+    ZoneScoped;
     window.setView(sf::View(sf::FloatRect({0, 0}, {SCREEN_WIDTH, SCREEN_HEIGHT})));
     //vSync ma ho gia il controllo con sleep_unitl
     //window.setVerticalSyncEnabled(true);
 
 
-    if (!background_texture.loadFromFile(IMAGES_PATH+"Background.png")) {
+    if (!background_texture.loadFromFile(IMAGES_PATH + "Background.png")) {
         std::cerr << "Errore caricamento Background.png\n";
     }
 
-    if (!font_texture.loadFromFile(FONTS_PATH+"Font.png")) {
+    if (!font_texture.loadFromFile(FONTS_PATH + "Font.png")) {
         std::cerr << "Errore caricamento Font.png\n";
     }
     background_sprite.emplace(background_texture);
     previous_time = std::chrono::steady_clock::now();
 
-    main_menu.addItem("Start Game",[this]() {
+    main_menu.addItem("Sigle Player Game", [this]() {
+        mode = GameMode::SinglePlayer;
+        players.clear();
+        players.reserve(1);
+        players.emplace_back(PlayerControls{
+            sf::Keyboard::Key::Left,
+            sf::Keyboard::Key::Right,
+            sf::Keyboard::Key::Z
+        });
         state = GameState::Playing;
     });
-    main_menu.addItem("Exit",[this]() {
+    main_menu.addItem("Local Multyplayer", [this]() {
+        mode = GameMode::LocalMultiPlayer;
+        players.clear();
+        players.reserve(2);
+        players.emplace_back(PlayerControls{
+            sf::Keyboard::Key::Left,
+            sf::Keyboard::Key::Right,
+            sf::Keyboard::Key::Space
+        });
+        players.emplace_back(PlayerControls{
+            sf::Keyboard::Key::A,
+            sf::Keyboard::Key::D,
+            sf::Keyboard::Key::Z,
+        });
+        state = GameState::Playing;
+    });
+    main_menu.addItem("Online", [this]() {
+        mode = GameMode::Online;
+        state = GameState::Playing;
+    });
+    main_menu.addItem("Exit", [this]() {
         window.close();
     });
 }
@@ -54,10 +83,9 @@ void Game::processEvents() {
         if (event->is<sf::Event::KeyPressed>()) {
             auto key = event->getIf<sf::Event::KeyPressed>()->code;
             if (key == sf::Keyboard::Key::Escape) {
-                if (state == GameState::Menu) {
+                if (state == GameState::Menu && !players.empty()) {
                     state = GameState::Playing;
-                }
-                else if (state == GameState::Playing) {
+                } else if (state == GameState::Playing) {
                     state = GameState::Menu;
                 }
             }
@@ -68,23 +96,43 @@ void Game::processEvents() {
     }
 }
 
+
 void Game::update() {
     ZoneScoped;
-    if (player.get_dead_animation_over()) {
-        state = GameState::GameOver;
+    if (state == GameState::Menu) {
+        main_menu.update(window);
+        return;
     }
-    if (enemy_manager.reached_player(player.get_y())) {
-        state = GameState::GameOver;
-        player.die();
+
+    fps_counter++;
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - fps_last_time);
+    if (elapsed.count() >= 1000) {
+        fps = fps_counter;
+        fps_counter = 0;
+        fps_last_time = now;
     }
-    if (state != GameState::GameOver && level != TOTAL_LEVELS) {
-        if (0 == enemy_manager.get_enemies().size()) {
-            state = GameState::NextLevel;
+
+    for (auto &player: players) {
+        if (player.get_dead_animation_over()) {
+            state = GameState::GameOver;
+        }
+        if (enemy_manager.reached_player(player.get_y())) {
+            state = GameState::GameOver;
+            player.die();
+        }
+        if (state != GameState::GameOver && level != TOTAL_LEVELS) {
+            if (0 == enemy_manager.get_enemies().size()) {
+                state = GameState::NextLevel;
+            }
         }
     }
     switch (state) {
         case GameState::Playing:
-            player.update(random_engine, enemy_manager.get_enemy_bullets(), enemy_manager.get_enemies(), ufo, score);
+            for (auto &player: players) {
+                player.update(random_engine, enemy_manager.get_enemy_bullets(), enemy_manager.get_enemies(), ufo,
+                              score);
+            }
             enemy_manager.update(random_engine, score);
             ufo.update(random_engine);
 
@@ -106,8 +154,9 @@ void Game::update() {
                     state = GameState::Win;
                 } else {
                     next_level_timer = NEXT_LEVEL_TRANSITION;
-
-                    player.reset();
+                    for (auto &player: players) {
+                        player.reset();
+                    }
                     enemy_manager.reset(level);
                     ufo.reset(1, random_engine);
 
@@ -123,27 +172,36 @@ void Game::update() {
                 reset();
             }
             break;
-        case GameState::Menu:
-            main_menu.update(window);
-            break;
     }
 }
 
 void Game::render() {
     ZoneScoped;
+
+    if (state == GameState::Menu) {
+        window.clear();
+        main_menu.draw(window, font_texture);
+        window.display();
+        return;
+    }
+
     window.clear();
 
     // sfondo
     window.draw(*background_sprite);
 
+
     // entità (solo se vivo)
-    if (player.get_dead() == 0) {
-        enemy_manager.draw(window);
-        ufo.draw(window);
+    for (auto &player: players) {
+        if (player.get_dead() == 0) {
+            enemy_manager.draw(window);
+            ufo.draw(window);
+        }
+    }
+    for (size_t i = 0; i < players.size(); i++) {
+        players[i].draw(window, (BASE_SIZE * i));
     }
 
-    // player sempre disegnato (anche animazione morte)
-    player.draw(window);
 
     // UI base
     draw_text(10, 8,
@@ -152,6 +210,10 @@ void Game::render() {
 
     draw_text(10, 20,
               "Score: " + std::to_string(score),
+              window, font_texture);
+
+    draw_text(SCREEN_WIDTH - 60, 8,
+              "FPS: " + std::to_string(fps),
               window, font_texture);
 
     // stati
@@ -171,10 +233,6 @@ void Game::render() {
             draw_text(100, 140, "Press E to restart", window, font_texture);
             break;
         }
-        case GameState::Menu: {
-            main_menu.draw(window,font_texture);
-            break;
-        }
         default: {
             break;
         }
@@ -188,8 +246,9 @@ void Game::reset() {
     state = GameState::Menu;
     level = 0;
     score = 0;
-
-    player.reset();
+    for (auto &player: players) {
+        player.reset();
+    }
     enemy_manager.reset(level);
     ufo.reset(1, random_engine);
 }

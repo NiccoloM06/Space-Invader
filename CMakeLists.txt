@@ -23,6 +23,7 @@ add_executable(SpaceInvader
         MenuItem.h
         Menu.cpp
         Menu.h
+        cmake-build-debug/GameMode.h
 )
 
 target_compile_definitions(SpaceInvader PRIVATE TRACY_ENABLE)

@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "GameState.h"
 #include "Menu.h"
+#include "cmake-build-debug/GameMode.h"
 
 class Game {
 public:
@@ -29,13 +30,19 @@ private:
 
     Menu main_menu;
     GameState state;
+    GameMode mode;
     EnemyManager enemy_manager;
-    Player player;
+    //Player player;
+    std::vector<Player> players;
     Ufo ufo;
 
     unsigned short level;
     unsigned short score;
     unsigned short next_level_timer;
+
+    unsigned short fps;
+    unsigned short fps_counter;
+    std::chrono::steady_clock::time_point fps_last_time;
 
     std::chrono::microseconds lag;
     std::chrono::steady_clock::time_point previous_time;

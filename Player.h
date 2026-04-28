@@ -2,8 +2,16 @@
 
 using namespace std;
 
+struct  PlayerControls {
+	sf::Keyboard::Key left;
+	sf::Keyboard::Key right;
+	sf::Keyboard::Key shoot;
+};
+
 class Player
 {
+	PlayerControls controls;
+
 	bool dead;
 	bool dead_animation_over;
 	bool shield_animation_over;
@@ -27,7 +35,7 @@ class Player
 
 	Animation explosion;
 public:
-	Player();
+	Player(PlayerControls i_control);
 
 	bool get_dead() const;
 	bool get_dead_animation_over() const;
@@ -35,7 +43,7 @@ public:
 	unsigned short get_y() const;
 
 	void die();
-	void draw(sf::RenderWindow& i_window);
+	void draw(sf::RenderWindow& i_window,unsigned short playerColor);
 	void reset();
 	void update( mt19937_64& i_random_engine,  vector<Bullet>& i_enemy_bullets,  vector<Enemy>& i_enemies, Ufo& i_ufo, unsigned short& i_score);
 

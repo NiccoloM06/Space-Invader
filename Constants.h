@@ -37,6 +37,8 @@ constexpr unsigned short SCREEN_WIDTH = 340;
 constexpr unsigned short UFO_TIMER_MAX = 1024;
 constexpr unsigned short UFO_TIMER_MIN = 768;
 
+
+
 constexpr  chrono::microseconds FRAME_DURATION(16667);
 
 struct Bullet
